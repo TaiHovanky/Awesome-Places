@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Button, Text, View, Image, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { Button, Text, View, Image, StyleSheet, TouchableOpacity, Platform, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MapView from 'react-native-maps';
 import { connect } from 'react-redux';
 import { deletePlace } from '../../store/actions/index';
 
@@ -11,6 +12,11 @@ class placeDetail extends Component {
     }
 
     render () {
+        console.log('this props', this.props.selectedPlace)
+        const deltas = {
+            latitudeDelta: 0.0122,
+            longitudeDelta: Dimensions.get("window").width / Dimensions.get("window").height * 0.0122
+        }
         return (
             <View style={styles.container}>
                 <View>
@@ -28,6 +34,12 @@ class placeDetail extends Component {
                         </View>
                     </TouchableOpacity>
                 </View>
+                <MapView
+                    style={styles.map}
+                    initialRegion={Object.assign({}, this.props.selectedPlace.location, deltas)}
+                >
+                    <MapView.Marker coordinate={this.props.selectedPlace.location} />
+                </MapView>
             </View>
         );
     }
@@ -48,6 +60,10 @@ const styles = StyleSheet.create({
     },
     deleteButton: {
         alignItems: "center"
+    },
+    map: {
+        width: "100%",
+        height: 250
     }
 })
 

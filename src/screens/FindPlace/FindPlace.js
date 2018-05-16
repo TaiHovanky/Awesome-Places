@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { connect } from 'react-redux';
-import PlaceList from '../../components/PlaceList/PlaceList'
+import PlaceList from '../../components/PlaceList/PlaceList';
+import { getPlaces } from '../../store/actions/index'
 
 class FindPlaceScreen extends Component {
     static navigatorStyle = {
@@ -9,7 +10,7 @@ class FindPlaceScreen extends Component {
     }
 
     state = {
-        placesLoaded: false,
+        // placesLoaded: false,
         removeAnimation: new Animated.Value(1)
     }
 
@@ -17,6 +18,10 @@ class FindPlaceScreen extends Component {
         super(props);
 
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    }
+
+    componentDidMount () {
+        this.props.onLoadPlaces();
     }
 
     onNavigatorEvent = event => {
@@ -52,35 +57,39 @@ class FindPlaceScreen extends Component {
     }
 
     render () {
-        let content = (
-            <Animated.View style={{
-                opacity: this.state.removeAnimation,
-                transform: [{
-                    scale: this.state.removeAnimation.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [12, 1]
-                    })
-                }]
-            }}>
-                <TouchableOpacity onPress={this.placesSearchHandler}>
-                    <View style={styles.searchButton}>
-                        <Text style={styles.searchButtonText}>Find Places</Text>
-                    </View>
-                </TouchableOpacity>
-            </Animated.View>
-        )
-        if (this.state.placesLoaded) {
-            content = (
+        // console.log('this props ========', this.props)
+        // let content = (
+        //     <Animated.View style={{
+        //         opacity: this.state.removeAnimation,
+        //         transform: [{
+        //             scale: this.state.removeAnimation.interpolate({
+        //                 inputRange: [0, 1],
+        //                 outputRange: [12, 1]
+        //             })
+        //         }]
+        //     }}>
+        //         <TouchableOpacity onPress={this.placesSearchHandler}>
+        //             <View style={styles.searchButton}>
+        //                 <Text style={styles.searchButtonText}>Find Places</Text>
+        //             </View>
+        //         </TouchableOpacity>
+        //     </Animated.View>
+        // )
+        // if (this.state.placesLoaded) {
+            // let content = (
+                // <PlaceList 
+                //     places={this.props.places}
+                //     onItemSelected={this.itemSelectedHandler}
+                // />
+            // )
+        // }
+        return (
+            <View>
                 <PlaceList 
                     places={this.props.places}
                     onItemSelected={this.itemSelectedHandler}
                 />
-            )
-        }
-        return (
-           < View style={this.state.placesLoaded ? null : styles.buttonContainer}>
-                {content}
-           </View>
+            </View>
         )
     }
 }
@@ -105,9 +114,16 @@ const styles = StyleSheet.create({
 })
 
 const mapStateToProps = state => {
+    console.log('places state============', state)
     return {
         places: state.places.places
     }
 }
 
-export default connect(mapStateToProps)(FindPlaceScreen);
+const mapDispatchToProps = dispatch => {
+    return {
+        onLoadPlaces: () => dispatch(getPlaces()) 
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(FindPlaceScreen);

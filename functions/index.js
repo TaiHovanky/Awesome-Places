@@ -53,7 +53,8 @@ exports.storeImage = functions.https.onRequest((request, response) => {
                         response.status(201).json({
                             imageUrl: 'https://firebasestorage.googleapis.com/v0/b/' +
                                 bucket.name + '/o/' + encodeURIComponent(file.name) +
-                                '?alt=media&token=' + uuidString
+                                '?alt=media&token=' + uuidString,
+                            imagePath: '/places/' + uuid + '.jpg'
                         });
                     } else {
                         console.log('error', err);
@@ -67,3 +68,13 @@ exports.storeImage = functions.https.onRequest((request, response) => {
             })
     });
 });
+
+exports.deleteImage = functions.database
+    .ref('/places/{placeId}')
+    .onDelete(event => {
+        const placeData = event.data.previous.val();
+        const imagePath = placeData.imagePath;
+
+        const bucket = gcs.bucket('rnitcourse-1526268662241.appspot.com');
+        return bucket.file(imagePath).delete();
+    });

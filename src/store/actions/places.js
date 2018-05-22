@@ -1,5 +1,11 @@
-import { SET_PLACES, DELETE_PLACE } from './actionTypes';
+import { SET_PLACES, DELETE_PLACE, PLACE_ADDED, START_ADD_PLACE } from './actionTypes';
 import { uiStartLoading, uiStopLoading, authGetToken } from './index';
+
+export const startAddPlace = () => {
+    return {
+        type: START_ADD_PLACE
+    }
+}
 
 export const addPlace = (placeName, location, image) => {
     let authToken;
@@ -25,24 +31,36 @@ export const addPlace = (placeName, location, image) => {
                 console.log('err', err);
                 alert('Something went wrong');
                 dispatch(uiStopLoading());
-            })
+            }) // only catches network errors, not 400/500 errors
             .then(res => {
-                return res.json();
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw(new Error());
+                }
             })
             .then(parsedRes => {
                 const placeData = {
                     name: placeName,
                     location,
-                    image: parsedRes.imageUrl
+                    image: parsedRes.imageUrl,
+                    imagePath: parsedRes.imagePath
                 };
                 return fetch("https://rnitcourse-1526268662241.firebaseio.com/places.json?auth=" + authToken, {
                     method: "POST",
                     body: JSON.stringify(placeData)
                 })
-                .then(res => res.json())
+                .then(res => {
+                    if (res.ok) {
+                        return res.json();
+                    } else {
+                        throw(new Error());
+                    }
+                })
                 .then(parsedRes => {
                     console.log('after saving rest of place data------------', parsedRes);
                     dispatch(uiStopLoading());
+                    dispatch(placeAdded());
                 })
                 .catch(err => {
                     console.log(err);
@@ -69,7 +87,13 @@ export const deletePlace = (key) => {
             .catch(() => {
                 alert('No token found!');
             })
-            .then(res => res.json())
+            .then(res => {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw(new Error());
+                }
+            })
             .then(parsedRes => {
                 console.log('parsed res-----', parsedRes);
                 return { type: 'DELETE_PLACE' };
@@ -90,7 +114,13 @@ export const getPlaces = () => {
             .catch(() => {
                 alert('No token found!');
             })
-            .then(res => res.json())
+            .then(res => {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw(new Error());
+                }
+            })
             .then(parsedRes => {
                 const places = [];
                 for (let key in parsedRes) {
@@ -119,3 +149,9 @@ export const setPlaces = places => {
         places: places
     };
 };
+
+export const placeAdded = () => {
+    return {
+        type: PLACE_ADDED
+    }
+}
